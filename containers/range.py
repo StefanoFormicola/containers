@@ -28,14 +28,20 @@ def range(a, b=None, c=None):
     but the resulting code is much longer and harder to read/write.
     '''
     if b is None:
-        start, end, step = 0, a, 1
+        start = 0
+        end = a
+        step = 1
     elif c is None:
-        start, end, step = a, b, 1
+        start = a
+        end = b
+        step = 1
     else:
-        start, end, step = a, b, c
+        start = a
+        end = b
+        step = c
 
     while True:
         if (step > 0 and start >= end) or (step < 0 and start <= end):
             break
         yield start
-        start += step
+        start = start + step

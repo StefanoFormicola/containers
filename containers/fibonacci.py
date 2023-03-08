@@ -60,13 +60,12 @@ class Fib:
     >>> list(Fib(5))
     [1, 1, 2, 3, 5]
     '''
-    def __init__(self, n = None):
+    def __init__(self, n=None):
         '''
         Initializes the object with a limit n. If n is not specified it runs infinitely
         '''
         self.n = n
-    
-    
+
     def __repr__(self):
         '''
         Returns Fib as a string. Returns Fib of n if limit is specified. Returns Fib() if no limit is specified
@@ -76,13 +75,11 @@ class Fib:
         else:
             return "Fib({})".format(self.n)
 
-    
     def __iter__(self):
         '''
         Returns an iterator object for Fib (below)
         '''
         return FibIter(self.n)
-
 
 
 class FibIter:
@@ -96,7 +93,6 @@ class FibIter:
         self.n = n
         self.a = 0
         self.b = 1
-
     
     def __next__(self):
         '''
