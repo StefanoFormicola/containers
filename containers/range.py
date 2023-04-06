@@ -2,19 +2,16 @@ def range(a, b=None, c=None):
     '''
     This function should behave exactly like the built-in range function.
     For example:
-
     >>> list(range(5))
     [0, 1, 2, 3, 4]
     >>> list(range(1, 5))
     [1, 2, 3, 4]
     >>> list(range(1, 5, 2))
     [1, 3]
-
     HINT:
     If you can figure out how to use the built-in range function (without modifying the test cases!),
     then feel free to do so.
     That's fairly difficult to do, however, and it's much easier to just implement this function normally using the yield syntax.
-
     NOTE:
     For efficiency reasons, Python's built-in range object is written in the C programming language rather than natively in python.
     You can find the source code online at https://hg.python.org/cpython/file/ee7b713fec71/Objects/rangeobject.c
@@ -27,3 +24,21 @@ def range(a, b=None, c=None):
     Carefully written C code can be faster than the corresponding python code because it can remove some of the overhead of this automation process,
     but the resulting code is much longer and harder to read/write.
     '''
+    if b is None:
+        start = 0
+        end = a
+        step = 1
+    elif c is None:
+        start = a
+        end = b
+        step = 1
+    else:
+        start = a
+        end = b
+        step = c
+
+    while True:
+        if (step > 0 and start >= end) or (step < 0 and start <= end):
+            break
+        yield start
+        start = start + step
