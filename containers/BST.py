@@ -1,50 +1,41 @@
 '''
 This file implements the Binary Search Tree data structure.
-The functions in this file are considerably harder than the functions in the BinaryTree file.
+than the functions in the BinaryTree file.
 '''
 
 from containers.BinaryTree import BinaryTree, Node
 
 
 class BST(BinaryTree):
-    '''
-    The BST is a superclass of BinaryTree.
-    That means that the BST class "inherits" all of the methods from BinaryTree,
-    and we don't have to reimplement them.
-    '''
 
     def __init__(self, xs=None):
-        '''
-        FIXME:
-        If xs is a list (i.e. xs is not None),
-        then each element of xs needs to be inserted into the BST.
-        '''
         super().__init__()
+        if xs is not None:
+            self.insert_list(xs)
+
+    def __iter__(self):
+        second = self.root
+        while second:
+            if not second.left:
+                yield second.value
+                second = second.right
+            else:
+                first = second.left
+                while first.right and first.right != second:
+                    first = first.right
+
+                if not first.right:
+                    first.right = second
+                    second = second.left
+                else:
+                    first.right = None
+                    yield second.value
+                    second = second.right
 
     def __repr__(self):
-        '''
-        Notice that in the BinaryTree class,
-        we defined a __str__ function,
-        but not a __repr__ function.
-        Recall that the __repr__ function should return a string that can be used to recreate a valid instance of the class.
-        Thus, if you create a variable using the command BST([1,2,3])
-        it's __repr__ will return "BST([1,2,3])"
-
-        For the BST, type(self).__name__ will be the string "BST",
-        but for the AVLTree, this expression will be "AVLTree".
-        Using this expression ensures that all subclasses of BST will have a correct implementation of __repr__,
-        and that they won't have to reimplement it.
-        '''
         return type(self).__name__ + '(' + str(self.to_list('inorder')) + ')'
 
     def is_bst_satisfied(self):
-        '''
-        Whenever you implement a data structure,
-        the first thing to do is to implement a function that checks whether
-        the structure obeys all of its laws.
-        This makes it possible to automatically test whether insert/delete functions
-        are actually working.
-        '''
         if self.root:
             return BST._is_bst_satisfied(self.root)
         return True
@@ -54,21 +45,18 @@ class BST(BinaryTree):
         '''
         FIXME:
         The current implementation has a bug:
-        it only checks if the children of the current node are less than/greater than,
-        rather than ensuring that all nodes to the left/right are less than/greater than.
-
         HINT:
-        Use the _find_smallest and _find_largest functions to fix the bug.
-        You should use the _ prefixed methods because those are static methods just like this one.
+        Use the _find_smallest and _find_largest
+        functions to fix the bug.
         '''
         ret = True
         if node.left:
-            if node.value >= node.left.value:
+            if node.value >= BST._find_largest(node.left):
                 ret &= BST._is_bst_satisfied(node.left)
             else:
                 ret = False
         if node.right:
-            if node.value <= node.right.value:
+            if node.value <= BST._find_smallest(node.right):
                 ret &= BST._is_bst_satisfied(node.right)
             else:
                 ret = False
@@ -77,25 +65,47 @@ class BST(BinaryTree):
     def insert(self, value):
         '''
         Inserts value into the BST.
-
         FIXME:
         Implement this function.
-
         HINT:
-        Create a staticmethod helper function following the pattern of _is_bst_satisfied.
+        Create a staticmethod helper function
         '''
+        '''
+        if self.root:
+            BST._insert(self.root, value)
+        else:
+            self.root = Node(value)
+            '''
+        if not self.root:
+            self.root = Node(value)
+        else:
+            BST._insert(self.root, value)
+
+    @staticmethod
+    def _insert(node, value):
+        if value > node.value:
+            if node.right:
+                BST._insert(node.right, value)
+            else:
+                node.right = Node(value)
+        elif value < node.value:
+            if node.left:
+                BST._insert(node.left, value)
+            else:
+                node.left = Node(value)
+        else:
+            pass
 
     def insert_list(self, xs):
         '''
         Given a list xs, insert each element of xs into self.
-
         FIXME:
         Implement this function.
-
         HINT:
         Repeatedly call the insert method.
-        You cannot get this method to work correctly until you have gotten insert to work correctly.
         '''
+        for x in xs:
+            self.insert(x)
 
     def __contains__(self, value):
         '''
@@ -104,19 +114,29 @@ class BST(BinaryTree):
         return self.find(value)
 
     def find(self, value):
-        '''
-        Returns whether value is contained in the BST.
-
-        FIXME:
-        Implement this function.
-        '''
+        return BST._find(value, self.root)
 
     @staticmethod
     def _find(value, node):
         '''
-        FIXME:
-        Implement this function.
-        '''
+        if node is None:
+            return False
+        if node.value == value:
+            return True
+        if value < node.value:
+            return BST._find(value, node.left)
+        return BST._find(value, node.right)
+'''
+        live = node
+        while live is not None:
+            if value == live.value:
+                return True
+            elif value > live.value:
+                live = live.right
+            else:
+                live = live.left
+
+        return False
 
     def find_smallest(self):
         '''
@@ -141,36 +161,62 @@ class BST(BinaryTree):
     def find_largest(self):
         '''
         Returns the largest value in the tree.
-
         FIXME:
         Implement this function.
-
         HINT:
         Follow the pattern of the _find_smallest function.
         '''
+        if self.root is None:
+            raise ValueError('Nothing in tree')
+        else:
+            return BST._find_largest(self.root)
+
+    @staticmethod
+    def _find_largest(node):
+        '''
+        This is a helper function for find_smallest and
+        not intended to be called directly by user
+        '''
+        assert node is not None
+        if node.right is None:
+            return node.value
+        else:
+            return BST._find_largest(node.right)
 
     def remove(self, value):
-        '''
-        Removes value from the BST.
-        If value is not in the BST, it does nothing.
+        self.root = BST._remove(self.root, value)
 
-        FIXME:
-        Implement this function.
-
-        HINT:
-        You should have everything else working before you implement this function.
-
-        HINT:
-        Use a recursive helper function.
-        '''
+    @staticmethod
+    def _remove(node, value):
+        if node is None:
+            return None
+        elif value != node.value:
+            if value < node.value:
+                node.left = BST._remove(node.left, value)
+            else:
+                node.right = BST._remove(node.right, value)
+            return node
+        elif node.left is None and node.right is None:
+            return None
+        elif node.left is None:
+            return node.right
+        elif node.right is None:
+            return node.left
+        minimun = node.right
+        while minimun.left is not None:
+            minimun = minimun.left
+        minimun = minimun.value
+        node.value = minimun
+        node.right = BST._remove(node.right, minimun)
+        return node
 
     def remove_list(self, xs):
         '''
         Given a list xs, remove each element of xs from self.
-
         FIXME:
         Implement this function.
-
         HINT:
         See the insert_list function.
         '''
+        for x in xs:
+            self.remove(x)
