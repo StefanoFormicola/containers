@@ -10,7 +10,7 @@ This homework is using an explicit tree implementation to help you get more prac
 from containers.BinaryTree import BinaryTree, Node
 
 
-class Heap():
+class Heap(BinaryTree):
     '''
     FIXME:
     Heap is currently not a subclass of BinaryTree.
@@ -24,6 +24,10 @@ class Heap():
         If xs is a list (i.e. xs is not None),
         then each element of xs needs to be inserted into the Heap.
         '''
+        super().__init__()
+        self.size = 0
+        if xs:
+            self.insert_list(xs)
 
     def __repr__(self):
         '''
@@ -59,6 +63,14 @@ class Heap():
         FIXME:
         Implement this method.
         '''
+        ret = True
+        if node.left:
+            ret &= node.value <= node.left.value
+            ret &= Heap._is_heap_satisfied(node.left)
+        if node.right:
+            ret &= node.value <= node.right.value
+            ret &= Heap._is_heap_satisfied(node.right)
+        return ret
 
     def insert(self, value):
         '''
@@ -79,6 +91,29 @@ class Heap():
         Create a @staticmethod helper function,
         following the same pattern used in the BST and AVLTree insert functions.
         '''
+        self.size += 1
+        binary_str = bin(self.size)[3:]
+        if self.root is None:
+            self.root = Node(value)
+        else:
+            Heap._insert(self.root, value, binary_str)
+
+    @staticmethod
+    def _insert(node, value, binary_str):
+        if binary_str[0] == '0':
+            if len(binary_str) == 1:
+                node.left = Node(value)
+            else:
+                Heap._insert(node.left, value, binary_str[1:])
+            if node.value > node.left.value:
+                node.value, node.left.value = node.left.value, node.value
+        if binary_str[0] == '1':
+            if len(binary_str) == 1:
+                node.right = Node(value)
+            else:
+                Heap._insert(node.right, value, binary_str[1:])
+            if node.value > node.right.value:
+                node.value, node.right.value = node.right.value, node.value
 
     def insert_list(self, xs):
         '''
@@ -87,6 +122,8 @@ class Heap():
         FIXME:
         Implement this function.
         '''
+        for x in xs:
+            self.insert(x)
 
     def find_smallest(self):
         '''
@@ -95,6 +132,10 @@ class Heap():
         FIXME:
         Implement this function.
         '''
+        if self.root:
+            return self.root.value
+        else:
+            return None
 
     def remove_min(self):
         '''
@@ -115,3 +156,62 @@ class Heap():
         It's possible to do it with only a single helper (or no helper at all),
         but I personally found dividing up the code into two made the most sense.
         '''
+        if not self.root:
+            return
+        if self.size > 0:
+            self.size -= 1
+        if self.size == 0:
+            self.root = None
+            return
+        final = self._remove_bottom_right(self.root, self.size)
+        if final:
+            self.root.value = final.value
+            self._remove_bottom_right(self.root, self.size)
+            self._trickle(self.root)
+
+    @staticmethod
+    def _remove_bottom_right(root, size):
+        modified = size + 1
+        binary = bin(modified)
+        path = binary[3:]
+        present = root
+        for index in range(len(path) - 1):
+            direction = path[index]
+            if direction == '0':
+                present = present.left
+            elif direction == '1':
+                present = present.right
+        final = len(path) - 1
+        end = path[final]
+        if end == '0':
+            deleted = present.left
+            present.left = None
+        elif end == '1':
+            deleted = present.right
+            present.right = None
+        return deleted
+
+    @staticmethod
+    def _trickle(node):
+        trickle = True
+        while trickle:
+            first = node
+            left = first.left
+            right = first.right
+            minimum = first
+            if left:
+                left_value = left.value
+                if left_value < minimum.value:
+                    minimum = left
+            if right:
+                right_value = right.value
+                if right_value < minimum.value:
+                    minimum = right
+            if minimum != first:
+                first_value = first.value
+                minimum_value = minimum.value
+                first.value = minimum_value
+                minimum.value = first_value
+                node = minimum
+            else:
+                trickle = False
